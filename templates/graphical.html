@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block title %}Método Gráfico - Solver PL{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Método Gráfico</h2>
+        <p class="lead">Visualiza la región factible y solución óptima (solo para 2 variables)</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Problema de 2 Variables</h5>
+            </div>
+            <div class="card-body">
+                <form id="graphicalForm">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Optimización</label>
+                        <select class="form-select" id="objectiveType">
+                            <option value="maximize">Maximizar</option>
+                            <option value="minimize">Minimizar</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Función Objetivo</label>
+                        <div class="row g-2">
+                            <div class="col">
+                                <div class="input-group">
+                                    <span class="input-group-text">Z =</span>
+                                    <input type="number" class="form-control" id="coefX1" value="40" step="any" required>
+                                    <span class="input-group-text">x₁ +</span>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="coefX2" value="50" step="any" required>
+                                    <span class="input-group-text">x₂</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Restricciones</label>
+                        <div id="constraintsContainer">
+                            <div class="constraint-card mb-3 p-3 border rounded">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col">
+                                        <input type="number" class="form-control" value="2" step="any" required>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span>x₁ +</span>
+                                    </div>
+                                    <div class="col">
+                                        <input type="number" class="form-control" value="3" step="any" required>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span>x₂</span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <select class="form-select">
+                                            <option value="<=" selected>&lt;=</option>
+                                            <option value=">=">&gt;=</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <input type="number" class="form-control" value="12" step="any" required>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeConstraint(this)">×</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="constraint-card mb-3 p-3 border rounded">
+                                <div class="row g-2 align-items-center">
+                                    <div class="col">
+                                        <input type="number" class="form-control" value="1" step="any" required>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span>x₁ +</span>
+                                    </div>
+                                    <div class="col">
+                                        <input type="number" class="form-control" value="2" step="any" required>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span>x₂</span>
+                                    </div>
+                                    <div class="col-auto">
+                                        <select class="form-select">
+                                            <option value="<=" selected>&lt;=</option>
+                                            <option value=">=">&gt;=</option>
+                                        </select>
+                                    </div>
+                                    <div class="col">
+                                        <input type="number" class="form-control" value="8" step="any" required>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeConstraint(this)">×</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addConstraint()">
+                            + Agregar Restricción
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Generar Gráfico</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Visualización Gráfica</h5>
+            </div>
+            <div class="card-body">
+                <div id="graphContainer">
+                    <p class="text-muted">El gráfico aparecerá aquí...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('graphicalForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await generateGraph();
+});
+
+function addConstraint() {
+    const container = document.getElementById('constraintsContainer');
+    const count = container.children.length + 1;
+    
+    const constraintDiv = document.createElement('div');
+    constraintDiv.className = 'constraint-card mb-3 p-3 border rounded';
+    constraintDiv.innerHTML = `
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <input type="number" class="form-control" value="1" step="any" required>
+            </div>
+            <div class="col-auto">
+                <span>x₁ +</span>
+            </div>
+            <div class="col">
+                <input type="number" class="form-control" value="1" step="any" required>
+            </div>
+            <div class="col-auto">
+                <span>x₂</span>
+            </div>
+            <div class="col-auto">
+                <select class="form-select">
+                    <option value="<=" selected>&lt;=</option>
+                    <option value=">=">&gt;=</option>
+                </select>
+            </div>
+            <div class="col">
+                <input type="number" class="form-control" value="10" step="any" required>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeConstraint(this)">×</button>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(constraintDiv);
+}
+
+function removeConstraint(button) {
+    if (document.querySelectorAll('.constraint-card').length > 1) {
+        button.closest('.constraint-card').remove();
+    } else {
+        alert('Debe haber al menos una restricción');
+    }
+}
+
+async function generateGraph() {
+    const graphContainer = document.getElementById('graphContainer');
+    
+    try {
+        graphContainer.innerHTML = '<div class="text-center"><div class="spinner-border"></div><p>Generando gráfico...</p></div>';
+        
+        const objectiveType = document.getElementById('objectiveType').value;
+        const coefX1 = parseFloat(document.getElementById('coefX1').value);
+        const coefX2 = parseFloat(document.getElementById('coefX2').value);
+        
+        // Obtener restricciones
+        const constraints = [];
+        const constraintElements = document.querySelectorAll('.constraint-card');
+        
+        constraintElements.forEach(constraint => {
+            const inputs = constraint.querySelectorAll('input[type="number"]');
+            const coefficients = [
+                parseFloat(inputs[0].value),
+                parseFloat(inputs[1].value)
+            ];
+            const operator = constraint.querySelector('select').value;
+            const rhs = parseFloat(inputs[2].value);
+            
+            constraints.push({
+                coefficients: coefficients,
+                type: operator,
+                rhs: rhs
+            });
+        });
+        
+        console.log('Enviando datos:', {
+            objective: { type: objectiveType, coefficients: [coefX1, coefX2] },
+            constraints: constraints
+        });
+        
+        // Enviar al servidor
+        const response = await fetch('/api/solve_graphical', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                objective: {
+                    type: objectiveType,
+                    coefficients: [coefX1, coefX2]
+                },
+                constraints: constraints
+            })
+        });
+        
+        // Verificar si la respuesta es JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            console.error('Respuesta no JSON:', text.substring(0, 200));
+            throw new Error('El servidor devolvió un error. Verifica la consola para más detalles.');
+        }
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || `Error HTTP: ${response.status}`);
+        }
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        // Mostrar gráfico y resultados
+        if (data.plot && data.plot.startsWith('data:image/png;base64,')) {
+            graphContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>Solución Encontrada</h6>
+                    <p><strong>Estado:</strong> ${data.status}</p>
+                    ${data.objective_value ? `<p><strong>Valor Óptimo:</strong> ${data.objective_value.toFixed(2)}</p>` : ''}
+                    ${data.variables && data.variables.x1 ? `<p><strong>Solución:</strong> x₁ = ${data.variables.x1.toFixed(2)}, x₂ = ${data.variables.x2.toFixed(2)}</p>` : ''}
+                </div>
+                <img src="${data.plot}" class="img-fluid" alt="Gráfico de Programación Lineal">
+            `;
+        } else if (data.plot) {
+            // Si viene solo el base64 sin el prefix
+            graphContainer.innerHTML = `
+                <div class="alert alert-success">
+                    <h6>Solución Encontrada</h6>
+                    <p><strong>Estado:</strong> ${data.status}</p>
+                </div>
+                <img src="data:image/png;base64,${data.plot}" class="img-fluid" alt="Gráfico de Programación Lineal">
+            `;
+        } else {
+            throw new Error('No se pudo generar el gráfico');
+        }
+        
+    } catch (error) {
+        console.error('Error completo:', error);
+        graphContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <strong>Error:</strong> ${error.message}
+                <br><br>
+                <small>Verifica que matplotlib esté instalado: <code>pip install matplotlib</code></small>
+            </div>
+        `;
+    }
+}
+</script>
+{% endblock %}

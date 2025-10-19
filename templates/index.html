@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solver Programación Lineal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .problem-card {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">Solver PL</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/custom">Personalizado</a>
+                <a class="nav-link" href="/simplex">Simplex</a>
+                <a class="nav-link" href="/transport">Transporte</a>
+                <a class="nav-link" href="/assignment">Asignación</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- ⬇️ LÍNEA AGREGADA (después de línea 23) -->
+        <div style="min-height: 70vh;">
+
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h1 class="display-4">Solver de Programación Lineal</h1>
+                <p class="lead">Resuelve problemas de optimización lineal de manera interactiva</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Problema Personalizado -->
+            <div class="col-md-6 mb-4">
+                <div class="card problem-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">🔧 Problema Personalizado</h5>
+                        <p class="card-text">Ingresa tu propio problema con cualquier número de variables y restricciones</p>
+                        <div class="mt-3">
+                            <span class="badge bg-primary">Variables ilimitadas</span>
+                            <span class="badge bg-success">Restricciones ilimitadas</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/custom" class="btn btn-primary w-100">Crear Problema</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Método Simplex -->
+            <div class="col-md-6 mb-4">
+                <div class="card problem-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">📊 Método Simplex</h5>
+                        <p class="card-text">Resuelve problemas lineales generales usando el método simplex</p>
+                        <div class="mt-3">
+                            <span class="badge bg-info">Método Clásico</span>
+                            <span class="badge bg-warning">Análisis Completo</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/simplex" class="btn btn-info w-100">Usar Simplex</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problema de Transporte -->
+            <div class="col-md-6 mb-4">
+                <div class="card problem-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">🚚 Problema de Transporte</h5>
+                        <p class="card-text">Optimiza costos de distribución entre fábricas y tiendas</p>
+                        <div class="mt-3">
+                            <span class="badge bg-success">Minimización</span>
+                            <span class="badge bg-secondary">Logística</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/transport" class="btn btn-success w-100">Resolver Transporte</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Problema de Asignación -->
+            <div class="col-md-6 mb-4">
+                <div class="card problem-card h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">👥 Problema de Asignación</h5>
+                        <p class="card-text">Asigna trabajadores a tareas minimizando costos</p>
+                        <div class="mt-3">
+                            <span class="badge bg-danger">Asignación Óptima</span>
+                            <span class="badge bg-dark">Recursos Humanos</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="/assignment" class="btn btn-warning w-100">Resolver Asignación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Problemas de Ejemplo -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>📚 Problemas de Ejemplo</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>Producción de Muebles</h6>
+                                        <p><strong>Max:</strong> Z = 40x₁ + 50x₂</p>
+                                        <p><strong>Sujeto a:</strong></p>
+                                        <ul class="small">
+                                            <li>2x₁ + 3x₂ ≤ 12</li>
+                                            <li>x₁ + 2x₂ ≤ 8</li>
+                                        </ul>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="loadExample(1)">Cargar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>Problema de Dieta</h6>
+                                        <p><strong>Min:</strong> Z = 3x₁ + 2x₂</p>
+                                        <p><strong>Sujeto a:</strong></p>
+                                        <ul class="small">
+                                            <li>2x₁ + 4x₂ ≥ 20</li>
+                                            <li>3x₁ + 2x₂ ≥ 18</li>
+                                        </ul>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="loadExample(2)">Cargar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>Problema de Inversión</h6>
+                                        <p><strong>Max:</strong> Z = 0.1x₁ + 0.15x₂</p>
+                                        <p><strong>Sujeto a:</strong></p>
+                                        <ul class="small">
+                                            <li>x₁ + x₂ ≤ 10000</li>
+                                            <li>x₁ ≤ 6000</li>
+                                            <li>x₂ ≥ 2000</li>
+                                        </ul>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="loadExample(3)">Cargar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ⬆️ LÍNEA AGREGADA (antes de línea 143) -->
+        </div>
+    </div>
+
+    <script>
+    function loadExample(exampleNum) {
+        let problemData = {};
+        
+        switch(exampleNum) {
+            case 1:
+                // Producción de Muebles
+                problemData = {
+                    var_count: 2,
+                    objective_type: 'maximize',
+                    objective_coeffs: [40, 50],
+                    constraints: [
+                        {coefficients: [2, 3], type: '<=', rhs: 12},
+                        {coefficients: [1, 2], type: '<=', rhs: 8}
+                    ]
+                };
+                break;
+            case 2:
+                // Problema de Dieta
+                problemData = {
+                    var_count: 2,
+                    objective_type: 'minimize',
+                    objective_coeffs: [3, 2],
+                    constraints: [
+                        {coefficients: [2, 4], type: '>=', rhs: 20},
+                        {coefficients: [3, 2], type: '>=', rhs: 18}
+                    ]
+                };
+                break;
+            case 3:
+                // Problema de Inversión
+                problemData = {
+                    var_count: 2,
+                    objective_type: 'maximize',
+                    objective_coeffs: [0.1, 0.15],
+                    constraints: [
+                        {coefficients: [1, 1], type: '<=', rhs: 10000},
+                        {coefficients: [1, 0], type: '<=', rhs: 6000},
+                        {coefficients: [0, 1], type: '>=', rhs: 2000}
+                    ]
+                };
+                break;
+        }
+        
+        // Guardar en localStorage y redirigir
+        localStorage.setItem('problemData', JSON.stringify(problemData));
+        window.location.href = '/custom';
+    }
+    </script>
+</body>
+</html>

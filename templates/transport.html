@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+
+{% block title %}Problema de Transporte - Solver PL{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Problema de Transporte</h2>
+        <p class="lead">Minimiza costos de distribución entre orígenes y destinos</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Configuración del Problema</h5>
+            </div>
+            <div class="card-body">
+                <form id="transportForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Número de Orígenes (Fábricas)</label>
+                            <input type="number" class="form-control" id="supplyCount" min="1" max="5" value="2" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Número de Destinos (Tiendas)</label>
+                            <input type="number" class="form-control" id="demandCount" min="1" max="5" value="3" required>
+                        </div>
+                    </div>
+
+                    <!-- Oferta -->
+                    <div class="mb-3">
+                        <label class="form-label">Oferta por Origen</label>
+                        <div id="supplyContainer">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Origen 1</span>
+                                <input type="number" class="form-control" value="30" min="0" required>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text">Origen 2</span>
+                                <input type="number" class="form-control" value="25" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Demanda -->
+                    <div class="mb-3">
+                        <label class="form-label">Demanda por Destino</label>
+                        <div id="demandContainer">
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Destino 1</span>
+                                <input type="number" class="form-control" value="20" min="0" required>
+                            </div>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text">Destino 2</span>
+                                <input type="number" class="form-control" value="15" min="0" required>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text">Destino 3</span>
+                                <input type="number" class="form-control" value="20" min="0" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Costos -->
+                    <div class="mb-3">
+                        <label class="form-label">Costos de Transporte</label>
+                        <div class="table-responsive">
+                            <table class="table table-sm" id="costTable">
+                                <thead>
+                                    <tr>
+                                        <th>Origen\Destino</th>
+                                        <th>Destino 1</th>
+                                        <th>Destino 2</th>
+                                        <th>Destino 3</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th>Origen 1</th>
+                                        <td><input type="number" class="form-control form-control-sm" value="8" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="6" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="10" min="0" required></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Origen 2</th>
+                                        <td><input type="number" class="form-control form-control-sm" value="9" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="12" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="13" min="0" required></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Resolver Problema</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Resultados</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer">
+                    <p class="text-muted">Los resultados del problema de transporte aparecerán aquí...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('transportForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await solveTransport();
+});
+
+// Actualizar tablas cuando cambian los números
+document.getElementById('supplyCount').addEventListener('change', updateTransportForm);
+document.getElementById('demandCount').addEventListener('change', updateTransportForm);
+
+function updateTransportForm() {
+    const supplyCount = parseInt(document.getElementById('supplyCount').value);
+    const demandCount = parseInt(document.getElementById('demandCount').value);
+    
+    updateSupplyInputs(supplyCount);
+    updateDemandInputs(demandCount);
+    updateCostTable(supplyCount, demandCount);
+}
+
+function updateSupplyInputs(count) {
+    const container = document.getElementById('supplyContainer');
+    container.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group mb-2';
+        inputGroup.innerHTML = `
+            <span class="input-group-text">Origen ${i+1}</span>
+            <input type="number" class="form-control" value="${30 + i*5}" min="0" required>
+        `;
+        container.appendChild(inputGroup);
+    }
+}
+
+function updateDemandInputs(count) {
+    const container = document.getElementById('demandContainer');
+    container.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'input-group mb-2';
+        inputGroup.innerHTML = `
+            <span class="input-group-text">Destino ${i+1}</span>
+            <input type="number" class="form-control" value="${20 + i*5}" min="0" required>
+        `;
+        container.appendChild(inputGroup);
+    }
+}
+
+function updateCostTable(supplyCount, demandCount) {
+    const table = document.getElementById('costTable');
+    
+    // Actualizar encabezados
+    let headerHTML = '<tr><th>Origen\\Destino</th>';
+    for (let j = 0; j < demandCount; j++) {
+        headerHTML += `<th>Destino ${j+1}</th>`;
+    }
+    headerHTML += '</tr>';
+    table.querySelector('thead').innerHTML = headerHTML;
+    
+    // Actualizar cuerpo
+    let bodyHTML = '';
+    for (let i = 0; i < supplyCount; i++) {
+        bodyHTML += `<tr><th>Origen ${i+1}</th>`;
+        for (let j = 0; j < demandCount; j++) {
+            bodyHTML += `<td><input type="number" class="form-control form-control-sm" value="${8 + i + j}" min="0" required></td>`;
+        }
+        bodyHTML += '</tr>';
+    }
+    table.querySelector('tbody').innerHTML = bodyHTML;
+}
+
+async function solveTransport() {
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    try {
+        resultsContainer.innerHTML = '<div class="text-center"><div class="spinner-border"></div><p>Calculando ruta óptima...</p></div>';
+        
+        const supplyCount = parseInt(document.getElementById('supplyCount').value);
+        const demandCount = parseInt(document.getElementById('demandCount').value);
+        
+        // Obtener oferta
+        const supply = [];
+        const supplyInputs = document.querySelectorAll('#supplyContainer input');
+        supplyInputs.forEach(input => {
+            supply.push(parseFloat(input.value));
+        });
+        
+        // Obtener demanda
+        const demand = [];
+        const demandInputs = document.querySelectorAll('#demandContainer input');
+        demandInputs.forEach(input => {
+            demand.push(parseFloat(input.value));
+        });
+        
+        // Obtener costos
+        const costs = [];
+        const costInputs = document.querySelectorAll('#costTable input');
+        let index = 0;
+        for (let i = 0; i < supplyCount; i++) {
+            costs.push([]);
+            for (let j = 0; j < demandCount; j++) {
+                costs[i].push(parseFloat(costInputs[index].value));
+                index++;
+            }
+        }
+        
+        // Enviar al servidor
+        const response = await fetch('/api/solve_transport', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                supply: supply,
+                demand: demand,
+                costs: costs
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        displayTransportResults(data);
+        
+    } catch (error) {
+        resultsContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <strong>Error:</strong> ${error.message}
+            </div>
+        `;
+    }
+}
+
+function displayTransportResults(data) {
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    let html = `
+        <div class="alert alert-success">
+            <h6>¡Solución Óptima Encontrada!</h6>
+            <p><strong>Costo Total Mínimo:</strong> $${data.total_cost.toFixed(2)}</p>
+            <p><strong>Estado:</strong> ${data.status}</p>
+        </div>
+        
+        <div class="mb-4">
+            <h6>Plan de Transporte Óptimo:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Desde</th>
+                            <th>Hacia</th>
+                            <th>Cantidad</th>
+                            <th>Costo Unitario</th>
+                            <th>Costo Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    data.allocations.forEach(allocation => {
+        html += `
+            <tr>
+                <td>${allocation.from}</td>
+                <td>${allocation.to}</td>
+                <td>${allocation.quantity.toFixed(2)}</td>
+                <td>$${(allocation.cost / allocation.quantity).toFixed(2)}</td>
+                <td>$${allocation.cost.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Uso de Oferta:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Origen</th>
+                                <th>Usado</th>
+                                <th>Disponible</th>
+                                <th>% Usado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+    
+    data.supply_usage.forEach(usage => {
+        html += `
+            <tr>
+                <td>${usage.supplier}</td>
+                <td>${usage.used.toFixed(2)}</td>
+                <td>${usage.available.toFixed(2)}</td>
+                <td>${usage.percentage.toFixed(1)}%</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h6>Satisfacción de Demanda:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Destino</th>
+                                <th>Recibido</th>
+                                <th>Requerido</th>
+                                <th>% Satisfecho</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+    
+    data.demand_satisfaction.forEach(satisfaction => {
+        html += `
+            <tr>
+                <td>${satisfaction.customer}</td>
+                <td>${satisfaction.received.toFixed(2)}</td>
+                <td>${satisfaction.demanded.toFixed(2)}</td>
+                <td>${satisfaction.percentage.toFixed(1)}%</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    resultsContainer.innerHTML = html;
+}
+</script>
+{% endblock %}

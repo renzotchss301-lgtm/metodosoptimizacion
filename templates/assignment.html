@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}Problema de Asignación - Solver PL{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Problema de Asignación</h2>
+        <p class="lead">Asigna trabajadores a tareas minimizando costos</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Configuración del Problema</h5>
+            </div>
+            <div class="card-body">
+                <form id="assignmentForm">
+                    <div class="mb-3">
+                        <label class="form-label">Número de Trabajadores/Tareas</label>
+                        <input type="number" class="form-control" id="assignmentSize" min="2" max="6" value="4" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Matriz de Costos</label>
+                        <div class="table-responsive">
+                            <table class="table table-sm" id="costMatrix">
+                                <thead>
+                                    <tr>
+                                        <th>Trabajador\Tarea</th>
+                                        <th>Tarea 1</th>
+                                        <th>Tarea 2</th>
+                                        <th>Tarea 3</th>
+                                        <th>Tarea 4</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th>Trabajador 1</th>
+                                        <td><input type="number" class="form-control form-control-sm" value="15" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="18" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="21" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="24" min="0" required></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Trabajador 2</th>
+                                        <td><input type="number" class="form-control form-control-sm" value="19" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="23" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="22" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="18" min="0" required></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Trabajador 3</th>
+                                        <td><input type="number" class="form-control form-control-sm" value="26" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="17" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="16" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="19" min="0" required></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Trabajador 4</th>
+                                        <td><input type="number" class="form-control form-control-sm" value="21" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="24" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="27" min="0" required></td>
+                                        <td><input type="number" class="form-control form-control-sm" value="21" min="0" required></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Resolver Asignación</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Resultados</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer">
+                    <p class="text-muted">La asignación óptima aparecerá aquí...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('assignmentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await solveAssignment();
+});
+
+document.getElementById('assignmentSize').addEventListener('change', updateAssignmentMatrix);
+
+function updateAssignmentMatrix() {
+    const size = parseInt(document.getElementById('assignmentSize').value);
+    const table = document.getElementById('costMatrix');
+    
+    // Actualizar encabezados
+    let headerHTML = '<tr><th>Trabajador\\Tarea</th>';
+    for (let j = 0; j < size; j++) {
+        headerHTML += `<th>Tarea ${j+1}</th>`;
+    }
+    headerHTML += '</tr>';
+    table.querySelector('thead').innerHTML = headerHTML;
+    
+    // Actualizar cuerpo
+    let bodyHTML = '';
+    for (let i = 0; i < size; i++) {
+        bodyHTML += `<tr><th>Trabajador ${i+1}</th>`;
+        for (let j = 0; j < size; j++) {
+            bodyHTML += `<td><input type="number" class="form-control form-control-sm" value="${15 + i*2 + j}" min="0" required></td>`;
+        }
+        bodyHTML += '</tr>';
+    }
+    table.querySelector('tbody').innerHTML = bodyHTML;
+}
+
+async function solveAssignment() {
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    try {
+        resultsContainer.innerHTML = '<div class="text-center"><div class="spinner-border"></div><p>Calculando asignación óptima...</p></div>';
+        
+        const size = parseInt(document.getElementById('assignmentSize').value);
+        
+        // Obtener matriz de costos
+        const costMatrix = [];
+        const costInputs = document.querySelectorAll('#costMatrix input');
+        let index = 0;
+        for (let i = 0; i < size; i++) {
+            costMatrix.push([]);
+            for (let j = 0; j < size; j++) {
+                costMatrix[i].push(parseFloat(costInputs[index].value));
+                index++;
+            }
+        }
+        
+        // Enviar al servidor
+        const response = await fetch('/api/solve_assignment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                cost_matrix: costMatrix
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        
+        displayAssignmentResults(data);
+        
+    } catch (error) {
+        resultsContainer.innerHTML = `
+            <div class="alert alert-danger">
+                <strong>Error:</strong> ${error.message}
+            </div>
+        `;
+    }
+}
+
+function displayAssignmentResults(data) {
+    const resultsContainer = document.getElementById('resultsContainer');
+    
+    let html = `
+        <div class="alert alert-success">
+            <h6>¡Asignación Óptima Encontrada!</h6>
+            <p><strong>Costo Total Mínimo:</strong> $${data.total_cost.toFixed(2)}</p>
+            <p><strong>Estado:</strong> ${data.status}</p>
+        </div>
+        
+        <div class="mb-4">
+            <h6>Asignación Óptima:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Trabajador</th>
+                            <th>Tarea Asignada</th>
+                            <th>Costo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    data.assignments.forEach(assignment => {
+        html += `
+            <tr>
+                <td>${assignment.worker}</td>
+                <td>${assignment.task}</td>
+                <td>$${assignment.cost.toFixed(2)}</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h6>Análisis de Eficiencia:</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Trabajador</th>
+                            <th>Costo Asignado</th>
+                            <th>Mínimo Posible</th>
+                            <th>Máximo Posible</th>
+                            <th>Eficiencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    `;
+    
+    data.efficiency_analysis.forEach(analysis => {
+        html += `
+            <tr>
+                <td>${analysis.worker}</td>
+                <td>$${analysis.assigned_cost.toFixed(2)}</td>
+                <td>$${analysis.min_possible.toFixed(2)}</td>
+                <td>$${analysis.max_possible.toFixed(2)}</td>
+                <td>${analysis.efficiency.toFixed(1)}%</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    resultsContainer.innerHTML = html;
+}
+</script>
+{% endblock %}

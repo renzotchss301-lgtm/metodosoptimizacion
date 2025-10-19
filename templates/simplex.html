@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Método Simplex - Solver PL{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2>Método Simplex</h2>
+        <p class="lead">Resuelve problemas de programación lineal generales</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Configuración del Problema</h5>
+            </div>
+            <div class="card-body">
+                <form id="simplexForm">
+                    <div class="mb-3">
+                        <label class="form-label">Número de Variables</label>
+                        <input type="number" class="form-control" id="varCount" min="2" max="10" value="2" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Optimización</label>
+                        <select class="form-select" id="objectiveType">
+                            <option value="maximize">Maximizar</option>
+                            <option value="minimize">Minimizar</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Coeficientes de la Función Objetivo</label>
+                        <div id="objectiveCoefficients">
+                            <input type="number" class="form-control mb-1" placeholder="Coef x₁" value="40">
+                            <input type="number" class="form-control" placeholder="Coef x₂" value="50">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Restricciones</label>
+                        <div id="constraintsContainer">
+                            <div class="constraint mb-2">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" placeholder="Coef x₁" value="2">
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" placeholder="Coef x₂" value="3">
+                                    </div>
+                                    <div class="col-2">
+                                        <select class="form-select">
+                                            <option value="<=" selected>&lt;=</option>
+                                            <option value=">=">&gt;=</option>
+                                            <option value="==">=</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <input type="number" class="form-control" placeholder="RHS" value="12">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="constraint mb-2">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" placeholder="Coef x₁" value="1">
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="number" class="form-control" placeholder="Coef x₂" value="2">
+                                    </div>
+                                    <div class="col-2">
+                                        <select class="form-select">
+                                            <option value="<=" selected>&lt;=</option>
+                                            <option value=">=">&gt;=</option>
+                                            <option value="==">=</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2">
+                                        <input type="number" class="form-control" placeholder="RHS" value="8">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addConstraint()">
+                            + Agregar Restricción
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Resolver</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Resultados</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer">
+                    <p class="text-muted">Los resultados aparecerán aquí...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,32 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.constraint {
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    background-color: #f8f9fa;
+}
+
+.result-item {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid #007bff;
+    background-color: #f8f9fa;
+}
+
+.optimal-solution {
+    border-left-color: #28a745;
+    background-color: #d4edda;
+}
+
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
